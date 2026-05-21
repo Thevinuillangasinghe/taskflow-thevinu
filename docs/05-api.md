@@ -1,190 +1,292 @@
 # TaskFlow API Contract
 
-This document defines the planned API endpoints for the TaskFlow application.
+This document defines the planned REST API endpoints for the TaskFlow application.
 
 ---
 
-# Authentication APIs
+## Authentication
 
-## POST /api/auth/signup
+### POST /api/auth/signup
+Creates a new user account.
 
-Description:
-Create a new user account.
-
-Request Body:
+Request:
 - name
 - email
 - password
 
 Response:
-- User account created successfully
-- User information returned
+- id
+- name
+- email
 
 Status Codes:
 - 201 Created
 - 400 Bad Request
 
-Authentication Required:
+Auth Required:
 No
 
 ---
 
-## POST /api/auth/login
+### POST /api/auth/login
+Logs in an existing user.
 
-Description:
-Authenticate user login.
-
-Request Body:
+Request:
 - email
 - password
 
 Response:
-- Authentication token
-- User details
+- token
+- user
 
 Status Codes:
 - 200 OK
 - 401 Unauthorized
 
-Authentication Required:
+Auth Required:
 No
 
 ---
 
-# Workspace APIs
+### POST /api/auth/logout
+Logs out the current user.
 
-## POST /api/workspaces
-
-Description:
-Create a new workspace.
-
-Request Body:
-- workspace name
+Request:
+- none
 
 Response:
-- Workspace created successfully
+- message
 
 Status Codes:
-- 201 Created
-- 400 Bad Request
+- 200 OK
 
-Authentication Required:
+Auth Required:
 Yes
 
 ---
 
-## GET /api/workspaces
+### GET /api/me
+Returns the currently logged-in user.
 
-Description:
-Retrieve all workspaces for the authenticated user.
+Request:
+- none
 
 Response:
-- List of workspaces
+- id
+- name
+- email
 
 Status Codes:
 - 200 OK
 - 401 Unauthorized
 
-Authentication Required:
+Auth Required:
 Yes
 
 ---
 
-# Task APIs
+## Workspaces
 
-## POST /api/tasks
+### POST /api/workspaces
+Creates a workspace.
 
-Description:
-Create a new task.
-
-Request Body:
-- title
-- description
-- priority
-- dueDate
+Request:
+- name
 
 Response:
-- Task created successfully
+- id
+- name
+- ownerId
 
 Status Codes:
 - 201 Created
 - 400 Bad Request
+- 401 Unauthorized
 
-Authentication Required:
+Auth Required:
 Yes
 
 ---
 
-## GET /api/tasks
+### GET /api/workspaces
+Gets all workspaces for the logged-in user.
 
-Description:
-Retrieve all tasks within a workspace.
+Request:
+- none
 
 Response:
-- List of tasks
+- list of workspaces
 
 Status Codes:
 - 200 OK
 - 401 Unauthorized
 
-Authentication Required:
+Auth Required:
 Yes
 
 ---
 
-## PUT /api/tasks/:id
+### GET /api/workspaces/:id
+Gets a single workspace.
 
-Description:
-Update an existing task.
+Request:
+- workspace id
 
-Request Body:
+Response:
+- id
+- name
+- ownerId
+
+Status Codes:
+- 200 OK
+- 404 Not Found
+
+Auth Required:
+Yes
+
+---
+
+### DELETE /api/workspaces/:id
+Deletes a workspace.
+
+Request:
+- workspace id
+
+Response:
+- message
+
+Status Codes:
+- 200 OK
+- 404 Not Found
+
+Auth Required:
+Yes
+
+---
+
+## Tasks
+
+### POST /api/tasks
+Creates a task.
+
+Request:
 - title
 - description
 - status
 - priority
+- assigneeId
+- dueDate
+- workspaceId
 
 Response:
-- Updated task information
+- created task
 
 Status Codes:
-- 200 OK
-- 404 Not Found
+- 201 Created
+- 400 Bad Request
+- 401 Unauthorized
 
-Authentication Required:
+Auth Required:
 Yes
 
 ---
 
-## DELETE /api/tasks/:id
+### GET /api/workspaces/:workspaceId/tasks
+Gets all tasks in a workspace.
 
-Description:
-Delete a task.
+Request:
+- workspaceId
 
 Response:
-- Task deleted successfully
+- list of tasks
 
 Status Codes:
 - 200 OK
+- 401 Unauthorized
 - 404 Not Found
 
-Authentication Required:
+Auth Required:
 Yes
 
 ---
 
-# Activity Log APIs
+### PATCH /api/tasks/:id
+Updates a task.
 
-## GET /api/activity/:taskId
-
-Description:
-Retrieve activity history for a task.
+Request:
+- title
+- description
+- status
+- priority
+- assigneeId
+- dueDate
 
 Response:
-- List of activity records
+- updated task
+
+Status Codes:
+- 200 OK
+- 400 Bad Request
+- 404 Not Found
+
+Auth Required:
+Yes
+
+---
+
+### DELETE /api/tasks/:id
+Deletes a task.
+
+Request:
+- task id
+
+Response:
+- message
 
 Status Codes:
 - 200 OK
 - 404 Not Found
 
-Authentication Required:
+Auth Required:
+Yes
+
+---
+
+## Activity Log
+
+### GET /api/tasks/:id/activity
+Gets the activity history for a task.
+
+Request:
+- task id
+
+Response:
+- list of activity logs
+
+Status Codes:
+- 200 OK
+- 404 Not Found
+
+Auth Required:
+Yes
+
+---
+
+## Invitations
+
+### POST /api/workspaces/:id/invite
+Invites a teammate to a workspace.
+
+Request:
+- email
+
+Response:
+- invitation sent message
+
+Status Codes:
+- 200 OK
+- 400 Bad Request
+- 404 Not Found
+
+Auth Required:
 Yes
