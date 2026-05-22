@@ -70,7 +70,6 @@ function DroppableColumn({
     >
       <div className="mb-4 flex items-center justify-between">
         <h2 className="text-xl font-semibold text-white">{title}</h2>
-
         <span className="rounded-full bg-white/10 px-3 py-1 text-sm text-gray-300">
           {count}
         </span>
@@ -87,6 +86,10 @@ export default function BoardPage() {
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [activityLogs, setActivityLogs] = useState<ActivityLog[]>([]);
 
+  const [searchQuery, setSearchQuery] = useState("");
+  const [priorityFilter, setPriorityFilter] = useState("all");
+  const [statusFilter, setStatusFilter] = useState("all");
+
   const [editTitle, setEditTitle] = useState("");
   const [editDescription, setEditDescription] = useState("");
   const [editPriority, setEditPriority] = useState("medium");
@@ -102,19 +105,24 @@ export default function BoardPage() {
   }
 
   function getPriorityStyle(priority?: string) {
-    if (priority === "high") {
-      return "border-red-500/30 bg-red-500/10 text-red-300";
-    }
-
-    if (priority === "low") {
-      return "border-green-500/30 bg-green-500/10 text-green-300";
-    }
-
+    if (priority === "high") return "border-red-500/30 bg-red-500/10 text-red-300";
+    if (priority === "low") return "border-green-500/30 bg-green-500/10 text-green-300";
     return "border-yellow-500/30 bg-yellow-500/10 text-yellow-300";
   }
 
-  function getTaskCount(status: string) {
-    return tasks.filter((task) => task.status === status).length;
+  function getFilteredTasks(status: string) {
+    return tasks.filter((task) => {
+      const matchesColumn = task.status === status;
+      const matchesStatus =
+        statusFilter === "all" || task.status === statusFilter;
+      const matchesSearch =
+        task.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (task.description || "").toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesPriority =
+        priorityFilter === "all" || task.priority === priorityFilter;
+
+      return matchesColumn && matchesStatus && matchesSearch && matchesPriority;
+    });
   }
 
   function logout() {
@@ -148,10 +156,7 @@ export default function BoardPage() {
     setEditDueDate(task.dueDate ? task.dueDate.slice(0, 10) : "");
 
     try {
-      const response = await fetch(
-        `${getApiUrl()}/api/tasks/${task.id}/activity`
-      );
-
+      const response = await fetch(`${getApiUrl()}/api/tasks/${task.id}/activity`);
       const data = await response.json();
       setActivityLogs(data.activityLogs || []);
     } catch (error) {
@@ -245,23 +250,20 @@ export default function BoardPage() {
     if (!selectedTask) return;
 
     try {
-      const response = await fetch(
-        `${getApiUrl()}/api/tasks/${selectedTask.id}`,
-        {
-          method: "PATCH",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${getToken()}`,
-          },
-          body: JSON.stringify({
-            title: editTitle,
-            description: editDescription,
-            priority: editPriority,
-            assignee: editAssignee,
-            dueDate: editDueDate || undefined,
-          }),
-        }
-      );
+      const response = await fetch(`${getApiUrl()}/api/tasks/${selectedTask.id}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${getToken()}`,
+        },
+        body: JSON.stringify({
+          title: editTitle,
+          description: editDescription,
+          priority: editPriority,
+          assignee: editAssignee,
+          dueDate: editDueDate || undefined,
+        }),
+      });
 
       const data = await response.json();
 
@@ -326,7 +328,7 @@ export default function BoardPage() {
   function renderEmptyState() {
     return (
       <div className="rounded-xl border border-dashed border-white/10 p-6 text-center text-sm text-gray-500">
-        No tasks yet
+        No tasks found
       </div>
     );
   }
@@ -384,6 +386,38 @@ export default function BoardPage() {
         </div>
 
         <div className="mb-8 rounded-2xl border border-white/10 bg-white/5 p-4 backdrop-blur">
+          <div className="mb-4 grid gap-4 md:grid-cols-3">
+            <input
+              type="text"
+              placeholder="Search tasks..."
+              value={searchQuery}
+              onChange={(event) => setSearchQuery(event.target.value)}
+              className="rounded-xl border border-white/10 bg-black/30 px-4 py-3 text-white outline-none focus:border-blue-500"
+            />
+
+            <select
+              value={priorityFilter}
+              onChange={(event) => setPriorityFilter(event.target.value)}
+              className="rounded-xl border border-white/10 bg-black/30 px-4 py-3 text-white outline-none"
+            >
+              <option value="all">All Priorities</option>
+              <option value="high">High</option>
+              <option value="medium">Medium</option>
+              <option value="low">Low</option>
+            </select>
+
+            <select
+              value={statusFilter}
+              onChange={(event) => setStatusFilter(event.target.value)}
+              className="rounded-xl border border-white/10 bg-black/30 px-4 py-3 text-white outline-none"
+            >
+              <option value="all">All Statuses</option>
+              <option value="todo">Todo</option>
+              <option value="in-progress">In Progress</option>
+              <option value="done">Done</option>
+            </select>
+          </div>
+
           <div className="flex flex-col gap-4 md:flex-row">
             <input
               type="text"
@@ -404,32 +438,36 @@ export default function BoardPage() {
 
         <DndContext onDragEnd={handleDragEnd}>
           <div className="grid gap-6 lg:grid-cols-3">
-            <DroppableColumn id="todo" title="Todo" count={getTaskCount("todo")}>
-              {getTaskCount("todo") === 0
+            <DroppableColumn
+              id="todo"
+              title="Todo"
+              count={getFilteredTasks("todo").length}
+            >
+              {getFilteredTasks("todo").length === 0
                 ? renderEmptyState()
-                : tasks
-                    .filter((task) => task.status === "todo")
-                    .map((task) => renderTaskCard(task))}
+                : getFilteredTasks("todo").map((task) => renderTaskCard(task))}
             </DroppableColumn>
 
             <DroppableColumn
               id="in-progress"
               title="In Progress"
-              count={getTaskCount("in-progress")}
+              count={getFilteredTasks("in-progress").length}
             >
-              {getTaskCount("in-progress") === 0
+              {getFilteredTasks("in-progress").length === 0
                 ? renderEmptyState()
-                : tasks
-                    .filter((task) => task.status === "in-progress")
-                    .map((task) => renderTaskCard(task))}
+                : getFilteredTasks("in-progress").map((task) =>
+                    renderTaskCard(task)
+                  )}
             </DroppableColumn>
 
-            <DroppableColumn id="done" title="Done" count={getTaskCount("done")}>
-              {getTaskCount("done") === 0
+            <DroppableColumn
+              id="done"
+              title="Done"
+              count={getFilteredTasks("done").length}
+            >
+              {getFilteredTasks("done").length === 0
                 ? renderEmptyState()
-                : tasks
-                    .filter((task) => task.status === "done")
-                    .map((task) => renderTaskCard(task))}
+                : getFilteredTasks("done").map((task) => renderTaskCard(task))}
             </DroppableColumn>
           </div>
         </DndContext>
