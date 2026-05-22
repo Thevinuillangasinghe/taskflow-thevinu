@@ -465,9 +465,12 @@ function getDueDateStatus(dueDate?: string) {
   📊 {sidebarOpen && "Analytics"}
 </Link>
 
-      <button className="w-full rounded-xl px-4 py-3 text-left text-gray-400 transition hover:bg-white/10 hover:text-white">
-        📅 {sidebarOpen && "Calendar"}
-      </button>
+      <Link
+  href="/calendar"
+  className="block w-full rounded-xl px-4 py-3 text-left text-gray-400 transition hover:bg-white/10 hover:text-white"
+>
+  📅 {sidebarOpen && "Calendar"}
+</Link>
 
       <button className="w-full rounded-xl px-4 py-3 text-left text-gray-400 transition hover:bg-white/10 hover:text-white">
         ⚙️ {sidebarOpen && "Settings"}
