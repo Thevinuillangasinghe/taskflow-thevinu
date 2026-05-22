@@ -50,10 +50,12 @@ function DraggableTask({
 function DroppableColumn({
   id,
   title,
+  count,
   children,
 }: {
   id: string;
   title: string;
+  count: number;
   children: React.ReactNode;
 }) {
   const { setNodeRef, isOver } = useDroppable({ id });
@@ -65,7 +67,14 @@ function DroppableColumn({
         isOver ? "ring-2 ring-blue-400" : ""
       }`}
     >
-      <h2 className="mb-4 text-xl font-semibold text-white">{title}</h2>
+      <div className="mb-4 flex items-center justify-between">
+        <h2 className="text-xl font-semibold text-white">{title}</h2>
+
+        <span className="rounded-full bg-white/10 px-3 py-1 text-sm text-gray-300">
+          {count}
+        </span>
+      </div>
+
       <div className="space-y-3">{children}</div>
     </div>
   );
@@ -92,15 +101,13 @@ export default function BoardPage() {
   }
 
   function getPriorityStyle(priority?: string) {
-    if (priority === "high") {
-      return "border-red-500/30 bg-red-500/10 text-red-300";
-    }
-
-    if (priority === "low") {
-      return "border-green-500/30 bg-green-500/10 text-green-300";
-    }
-
+    if (priority === "high") return "border-red-500/30 bg-red-500/10 text-red-300";
+    if (priority === "low") return "border-green-500/30 bg-green-500/10 text-green-300";
     return "border-yellow-500/30 bg-yellow-500/10 text-yellow-300";
+  }
+
+  function getTaskCount(status: string) {
+    return tasks.filter((task) => task.status === status).length;
   }
 
   function logout() {
@@ -256,7 +263,6 @@ export default function BoardPage() {
 
   async function deleteTask(id: number) {
     const confirmed = window.confirm("Are you sure you want to delete this task?");
-
     if (!confirmed) return;
 
     try {
@@ -377,24 +383,36 @@ export default function BoardPage() {
 
         <DndContext onDragEnd={handleDragEnd}>
           <div className="grid gap-6 lg:grid-cols-3">
-            <DroppableColumn id="todo" title="Todo">
-              {tasks.filter((task) => task.status === "todo").length === 0
+            <DroppableColumn
+              id="todo"
+              title="Todo"
+              count={getTaskCount("todo")}
+            >
+              {getTaskCount("todo") === 0
                 ? renderEmptyState()
                 : tasks
                     .filter((task) => task.status === "todo")
                     .map((task) => renderTaskCard(task))}
             </DroppableColumn>
 
-            <DroppableColumn id="in-progress" title="In Progress">
-              {tasks.filter((task) => task.status === "in-progress").length === 0
+            <DroppableColumn
+              id="in-progress"
+              title="In Progress"
+              count={getTaskCount("in-progress")}
+            >
+              {getTaskCount("in-progress") === 0
                 ? renderEmptyState()
                 : tasks
                     .filter((task) => task.status === "in-progress")
                     .map((task) => renderTaskCard(task))}
             </DroppableColumn>
 
-            <DroppableColumn id="done" title="Done">
-              {tasks.filter((task) => task.status === "done").length === 0
+            <DroppableColumn
+              id="done"
+              title="Done"
+              count={getTaskCount("done")}
+            >
+              {getTaskCount("done") === 0
                 ? renderEmptyState()
                 : tasks
                     .filter((task) => task.status === "done")
@@ -437,9 +455,7 @@ export default function BoardPage() {
 
                   <textarea
                     value={editDescription}
-                    onChange={(event) =>
-                      setEditDescription(event.target.value)
-                    }
+                    onChange={(event) => setEditDescription(event.target.value)}
                     className="min-h-[120px] w-full rounded-xl border border-white/10 bg-black/30 px-4 py-3 outline-none focus:border-blue-500"
                   />
                 </div>
