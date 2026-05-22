@@ -14,6 +14,6 @@ RUN npx prisma generate
 
 RUN ./node_modules/.bin/tsc
 
-EXPOSE 4000
+EXPOSE 8080
 
 CMD ["sh", "-c", "npx prisma migrate deploy && node dist/server.js"]
