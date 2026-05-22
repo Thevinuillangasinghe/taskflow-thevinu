@@ -15,25 +15,31 @@ export default function SignupPage() {
 
     try {
       const apiUrl =
-        process.env.NEXT_PUBLIC_API_URL ||
-        "http://localhost:4000";
+        process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
 
-      const response = await fetch(
-        `${apiUrl}/api/auth/signup`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            name,
-            email,
-            password,
-          }),
-        }
-      );
+      const response = await fetch(`${apiUrl}/api/auth/signup`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name,
+          email,
+          password,
+        }),
+      });
 
-      const data = await response.json();
+      const text = await response.text();
+
+      let data;
+
+      try {
+        data = JSON.parse(text);
+      } catch {
+        console.error("Non-JSON response:", text);
+        alert("Backend returned invalid response");
+        return;
+      }
 
       if (!response.ok) {
         alert(data.error || "Signup failed");
@@ -41,7 +47,6 @@ export default function SignupPage() {
       }
 
       alert("Signup successful. Please login.");
-
       router.push("/login");
     } catch (error) {
       console.error(error);
@@ -55,50 +60,33 @@ export default function SignupPage() {
         onSubmit={handleSignup}
         className="w-full max-w-sm rounded-xl bg-white p-6 shadow"
       >
-        <h1 className="mb-6 text-2xl font-bold">
-          Create Account
-        </h1>
+        <h1 className="mb-6 text-2xl font-bold">Create Account</h1>
 
-        <label className="mb-2 block text-sm font-medium">
-          Name
-        </label>
-
+        <label className="mb-2 block text-sm font-medium">Name</label>
         <input
           className="mb-4 w-full rounded-md border p-3"
           type="text"
           placeholder="Your name"
           value={name}
-          onChange={(event) =>
-            setName(event.target.value)
-          }
+          onChange={(event) => setName(event.target.value)}
         />
 
-        <label className="mb-2 block text-sm font-medium">
-          Email
-        </label>
-
+        <label className="mb-2 block text-sm font-medium">Email</label>
         <input
           className="mb-4 w-full rounded-md border p-3"
           type="email"
           placeholder="you@example.com"
           value={email}
-          onChange={(event) =>
-            setEmail(event.target.value)
-          }
+          onChange={(event) => setEmail(event.target.value)}
         />
 
-        <label className="mb-2 block text-sm font-medium">
-          Password
-        </label>
-
+        <label className="mb-2 block text-sm font-medium">Password</label>
         <input
           className="mb-6 w-full rounded-md border p-3"
           type="password"
           placeholder="Create password"
           value={password}
-          onChange={(event) =>
-            setPassword(event.target.value)
-          }
+          onChange={(event) => setPassword(event.target.value)}
         />
 
         <button className="w-full rounded-md bg-black p-3 text-white">
