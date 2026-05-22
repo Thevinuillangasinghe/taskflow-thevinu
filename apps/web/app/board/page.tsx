@@ -471,9 +471,12 @@ if (savedTheme) {
     </div>
 
     <nav className="space-y-2">
-      <button className="w-full rounded-xl bg-white/10 px-4 py-3 text-left transition hover:bg-white/20">
-        📋 {sidebarOpen && "Board"}
-      </button>
+      <Link
+  href="/board"
+  className="block w-full rounded-xl bg-white/10 px-4 py-3 text-left transition hover:bg-white/20"
+>
+  📋 {sidebarOpen && "Board"}
+</Link>
 
       <Link
   href="/analytics"
