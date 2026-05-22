@@ -21,9 +21,22 @@ model Workspace {
 }
 
 model Task {
-  id          Int       @id @default(autoincrement())
-  title       String
-  status      String
-  workspaceId Int
-  workspace   Workspace @relation(fields: [workspaceId], references: [id])
+  id           Int           @id @default(autoincrement())
+  title        String
+  description  String?
+  status       String
+  priority     String        @default("medium")
+  assignee     String?
+  dueDate      DateTime?
+  workspaceId  Int
+  workspace    Workspace     @relation(fields: [workspaceId], references: [id])
+  activityLogs ActivityLog[]
+}
+
+model ActivityLog {
+  id        Int      @id @default(autoincrement())
+  taskId    Int
+  task      Task     @relation(fields: [taskId], references: [id])
+  action    String
+  createdAt DateTime @default(now())
 }
