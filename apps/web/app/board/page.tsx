@@ -1,5 +1,5 @@
 "use client";
-
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import {
@@ -458,9 +458,12 @@ function getDueDateStatus(dueDate?: string) {
         📋 {sidebarOpen && "Board"}
       </button>
 
-      <button className="w-full rounded-xl px-4 py-3 text-left text-gray-400 transition hover:bg-white/10 hover:text-white">
-        📊 {sidebarOpen && "Analytics"}
-      </button>
+      <Link
+  href="/analytics"
+  className="block w-full rounded-xl px-4 py-3 text-left text-gray-400 transition hover:bg-white/10 hover:text-white"
+>
+  📊 {sidebarOpen && "Analytics"}
+</Link>
 
       <button className="w-full rounded-xl px-4 py-3 text-left text-gray-400 transition hover:bg-white/10 hover:text-white">
         📅 {sidebarOpen && "Calendar"}
