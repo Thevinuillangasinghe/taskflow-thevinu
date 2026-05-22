@@ -432,6 +432,7 @@ function getDueDateStatus(dueDate?: string) {
     <main className="min-h-screen bg-gradient-to-br from-gray-950 via-black to-gray-900 p-6 text-white">
       <div className="mx-auto max-w-7xl">
         <div className="mb-8 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+          
           <div>
             <h1 className="text-5xl font-bold tracking-tight">Task Board</h1>
             <p className="mt-2 text-gray-400">
@@ -446,7 +447,60 @@ function getDueDateStatus(dueDate?: string) {
             Logout
           </button>
         </div>
+          <div className="mb-8 grid gap-4 md:grid-cols-4">
+  <div className="rounded-2xl border border-white/10 bg-white/5 p-5 backdrop-blur">
+    <p className="text-sm text-gray-400">
+      Total Tasks
+    </p>
 
+    <h2 className="mt-2 text-3xl font-bold">
+      {tasks.length}
+    </h2>
+  </div>
+
+  <div className="rounded-2xl border border-white/10 bg-white/5 p-5 backdrop-blur">
+    <p className="text-sm text-gray-400">
+      Completed
+    </p>
+
+    <h2 className="mt-2 text-3xl font-bold text-green-400">
+      {
+        tasks.filter(
+          (task) => task.status === "done"
+        ).length
+      }
+    </h2>
+  </div>
+
+  <div className="rounded-2xl border border-white/10 bg-white/5 p-5 backdrop-blur">
+    <p className="text-sm text-gray-400">
+      In Progress
+    </p>
+
+    <h2 className="mt-2 text-3xl font-bold text-yellow-300">
+      {
+        tasks.filter(
+          (task) =>
+            task.status === "in-progress"
+        ).length
+      }
+    </h2>
+  </div>
+
+  <div className="rounded-2xl border border-white/10 bg-white/5 p-5 backdrop-blur">
+    <p className="text-sm text-gray-400">
+      High Priority
+    </p>
+
+    <h2 className="mt-2 text-3xl font-bold text-red-400">
+      {
+        tasks.filter(
+          (task) => task.priority === "high"
+        ).length
+      }
+    </h2>
+  </div>
+</div>
         <div className="mb-8 rounded-2xl border border-white/10 bg-white/5 p-4 backdrop-blur">
           <div className="mb-4 grid gap-4 md:grid-cols-3">
             <input
