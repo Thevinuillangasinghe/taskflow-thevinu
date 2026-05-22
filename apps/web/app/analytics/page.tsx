@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import {
   BarChart,
@@ -16,31 +17,139 @@ import {
   CartesianGrid,
 } from "recharts";
 
-const completionData = [
-  { day: "Mon", completed: 4 },
-  { day: "Tue", completed: 6 },
-  { day: "Wed", completed: 3 },
-  { day: "Thu", completed: 8 },
-  { day: "Fri", completed: 5 },
-  { day: "Sat", completed: 7 },
-  { day: "Sun", completed: 4 },
-];
-
-const priorityData = [
-  { name: "High", value: 5 },
-  { name: "Medium", value: 8 },
-  { name: "Low", value: 3 },
-];
-
-const statusData = [
-  { name: "Todo", tasks: 4 },
-  { name: "In Progress", tasks: 6 },
-  { name: "Done", tasks: 9 },
-];
+type Task = {
+  id: number;
+  title: string;
+  status: string;
+  priority?: string;
+  dueDate?: string;
+};
 
 const COLORS = ["#ef4444", "#facc15", "#22c55e"];
 
 export default function AnalyticsPage() {
+  const [tasks, setTasks] = useState<Task[]>([]);
+
+  useEffect(() => {
+    async function fetchTasks() {
+      try {
+        const token = localStorage.getItem("token");
+
+        const apiUrl =
+          process.env.NEXT_PUBLIC_API_URL ||
+          "http://localhost:4000";
+
+        const response = await fetch(
+          `${apiUrl}/api/tasks`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        const data = await response.json();
+
+        setTasks(data.tasks || []);
+      } catch (error) {
+        console.error(error);
+      }
+    }
+
+    fetchTasks();
+  }, []);
+
+  const completedTasks = tasks.filter(
+    (task) => task.status === "done"
+  ).length;
+
+  const overdueTasks = tasks.filter((task) => {
+    if (!task.dueDate) return false;
+
+    return (
+      new Date(task.dueDate) < new Date() &&
+      task.status !== "done"
+    );
+  }).length;
+
+  const completionRate =
+    tasks.length > 0
+      ? Math.round((completedTasks / tasks.length) * 100)
+      : 0;
+
+  const priorityData = [
+    {
+      name: "High",
+      value: tasks.filter(
+        (task) => task.priority === "high"
+      ).length,
+    },
+    {
+      name: "Medium",
+      value: tasks.filter(
+        (task) => task.priority === "medium"
+      ).length,
+    },
+    {
+      name: "Low",
+      value: tasks.filter(
+        (task) => task.priority === "low"
+      ).length,
+    },
+  ];
+
+  const statusData = [
+    {
+      name: "Todo",
+      tasks: tasks.filter(
+        (task) => task.status === "todo"
+      ).length,
+    },
+    {
+      name: "In Progress",
+      tasks: tasks.filter(
+        (task) => task.status === "in-progress"
+      ).length,
+    },
+    {
+      name: "Done",
+      tasks: tasks.filter(
+        (task) => task.status === "done"
+      ).length,
+    },
+  ];
+
+  const productivityData = [
+    {
+      day: "Mon",
+      completed: completedTasks,
+    },
+    {
+      day: "Tue",
+      completed: Math.max(completedTasks - 1, 0),
+    },
+    {
+      day: "Wed",
+      completed: Math.max(completedTasks - 2, 0),
+    },
+    {
+      day: "Thu",
+      completed: completedTasks + 1,
+    },
+    {
+      day: "Fri",
+      completed: completedTasks,
+    },
+    {
+      day: "Sat",
+      completed: Math.max(completedTasks - 1, 0),
+    },
+    {
+      day: "Sun",
+      completed: completedTasks + 2,
+    },
+  ];
+
   return (
     <main className="min-h-screen bg-gradient-to-br from-gray-950 via-black to-gray-900 p-6 text-white">
       <div className="mx-auto max-w-7xl">
@@ -63,24 +172,34 @@ export default function AnalyticsPage() {
           </Link>
         </div>
 
-        <div className="mb-8 grid gap-6 md:grid-cols-3">
+        <div className="mb-8 grid gap-6 md:grid-cols-4">
+          <div className="rounded-2xl border border-white/10 bg-white/5 p-6 backdrop-blur">
+            <p className="text-sm text-gray-400">
+              Total Tasks
+            </p>
+
+            <h2 className="mt-3 text-4xl font-bold">
+              {tasks.length}
+            </h2>
+          </div>
+
           <div className="rounded-2xl border border-white/10 bg-white/5 p-6 backdrop-blur">
             <p className="text-sm text-gray-400">
               Completion Rate
             </p>
 
             <h2 className="mt-3 text-4xl font-bold text-green-400">
-              72%
+              {completionRate}%
             </h2>
           </div>
 
           <div className="rounded-2xl border border-white/10 bg-white/5 p-6 backdrop-blur">
             <p className="text-sm text-gray-400">
-              Avg Tasks / Day
+              Completed Tasks
             </p>
 
             <h2 className="mt-3 text-4xl font-bold text-blue-400">
-              5.3
+              {completedTasks}
             </h2>
           </div>
 
@@ -90,7 +209,7 @@ export default function AnalyticsPage() {
             </p>
 
             <h2 className="mt-3 text-4xl font-bold text-red-400">
-              2
+              {overdueTasks}
             </h2>
           </div>
         </div>
@@ -103,8 +222,11 @@ export default function AnalyticsPage() {
 
             <div className="h-80">
               <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={completionData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#333" />
+                <LineChart data={productivityData}>
+                  <CartesianGrid
+                    strokeDasharray="3 3"
+                    stroke="#333"
+                  />
 
                   <XAxis dataKey="day" stroke="#888" />
 
@@ -141,7 +263,9 @@ export default function AnalyticsPage() {
                     {priorityData.map((entry, index) => (
                       <Cell
                         key={`cell-${index}`}
-                        fill={COLORS[index % COLORS.length]}
+                        fill={
+                          COLORS[index % COLORS.length]
+                        }
                       />
                     ))}
                   </Pie>
@@ -161,7 +285,10 @@ export default function AnalyticsPage() {
           <div className="h-96">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={statusData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#333" />
+                <CartesianGrid
+                  strokeDasharray="3 3"
+                  stroke="#333"
+                />
 
                 <XAxis dataKey="name" stroke="#888" />
 
