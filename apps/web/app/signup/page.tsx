@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 export default function SignupPage() {
   const router = useRouter();
@@ -37,20 +38,24 @@ export default function SignupPage() {
         data = JSON.parse(text);
       } catch {
         console.error("Non-JSON response:", text);
-        alert("Backend returned invalid response");
+
+        toast.error("Backend returned invalid response");
+
         return;
       }
 
       if (!response.ok) {
-        alert(data.error || "Signup failed");
+        toast.error(data.error || "Signup failed");
         return;
       }
 
-      alert("Signup successful. Please login.");
+      toast.success("Signup successful");
+
       router.push("/login");
     } catch (error) {
       console.error(error);
-      alert("Something went wrong");
+
+      toast.error("Something went wrong");
     }
   }
 
@@ -60,9 +65,14 @@ export default function SignupPage() {
         onSubmit={handleSignup}
         className="w-full max-w-sm rounded-xl bg-white p-6 shadow"
       >
-        <h1 className="mb-6 text-2xl font-bold">Create Account</h1>
+        <h1 className="mb-6 text-2xl font-bold">
+          Create Account
+        </h1>
 
-        <label className="mb-2 block text-sm font-medium">Name</label>
+        <label className="mb-2 block text-sm font-medium">
+          Name
+        </label>
+
         <input
           className="mb-4 w-full rounded-md border p-3"
           type="text"
@@ -71,7 +81,10 @@ export default function SignupPage() {
           onChange={(event) => setName(event.target.value)}
         />
 
-        <label className="mb-2 block text-sm font-medium">Email</label>
+        <label className="mb-2 block text-sm font-medium">
+          Email
+        </label>
+
         <input
           className="mb-4 w-full rounded-md border p-3"
           type="email"
@@ -80,7 +93,10 @@ export default function SignupPage() {
           onChange={(event) => setEmail(event.target.value)}
         />
 
-        <label className="mb-2 block text-sm font-medium">Password</label>
+        <label className="mb-2 block text-sm font-medium">
+          Password
+        </label>
+
         <input
           className="mb-6 w-full rounded-md border p-3"
           type="password"
@@ -89,7 +105,7 @@ export default function SignupPage() {
           onChange={(event) => setPassword(event.target.value)}
         />
 
-        <button className="w-full rounded-md bg-black p-3 text-white">
+        <button className="w-full rounded-md bg-black p-3 text-white transition hover:bg-gray-800">
           Sign Up
         </button>
       </form>
