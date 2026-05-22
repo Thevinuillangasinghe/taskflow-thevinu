@@ -492,12 +492,23 @@ function getDueDateStatus(dueDate?: string) {
             </p>
           </div>
 
-          <button
-            onClick={logout}
-            className="rounded-xl border border-red-500/30 bg-red-500/10 px-5 py-3 text-red-400 transition hover:bg-red-500/20"
-          >
-            Logout
-          </button>
+          <div className="flex gap-3">
+  <button
+    onClick={() =>
+      toast.info("Light mode coming soon")
+    }
+    className="rounded-xl border border-white/10 bg-white/5 px-5 py-3 text-gray-300 transition hover:bg-white/10"
+  >
+    🌙 Theme
+  </button>
+
+  <button
+    onClick={logout}
+    className="rounded-xl border border-red-500/30 bg-red-500/10 px-5 py-3 text-red-400 transition hover:bg-red-500/20"
+  >
+    Logout
+  </button>
+</div>
         </div>
           <div className="mb-8 grid gap-4 md:grid-cols-4">
   <div className="rounded-2xl border border-white/10 bg-white/5 p-5 backdrop-blur">
