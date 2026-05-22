@@ -109,7 +109,39 @@ export default function BoardPage() {
     if (priority === "low") return "border-green-500/30 bg-green-500/10 text-green-300";
     return "border-yellow-500/30 bg-yellow-500/10 text-yellow-300";
   }
+function getDueDateStatus(dueDate?: string) {
+  if (!dueDate) {
+    return {
+      text: "No due date",
+      className: "text-gray-500",
+    };
+  }
 
+  const today = new Date();
+  const due = new Date(dueDate);
+
+  today.setHours(0, 0, 0, 0);
+  due.setHours(0, 0, 0, 0);
+
+  if (due < today) {
+    return {
+      text: "Overdue",
+      className: "text-red-400",
+    };
+  }
+
+  if (due.getTime() === today.getTime()) {
+    return {
+      text: "Due today",
+      className: "text-yellow-300",
+    };
+  }
+
+  return {
+    text: due.toLocaleDateString(),
+    className: "text-green-400",
+  };
+}
   function getFilteredTasks(status: string) {
     return tasks.filter((task) => {
       const matchesColumn = task.status === status;
@@ -348,7 +380,37 @@ export default function BoardPage() {
             </p>
           )}
 
-          <div className="mt-4 flex items-center justify-between gap-2">
+         <div className="mt-4 space-y-3">
+  <div className="flex items-center justify-between gap-2">
+    <span
+      className={`rounded-full border px-3 py-1 text-xs capitalize ${getPriorityStyle(
+        task.priority
+      )}`}
+    >
+      {task.priority || "medium"}
+    </span>
+
+    <span className="text-xs text-gray-500">
+      {task.assignee || "Unassigned"}
+    </span>
+  </div>
+
+  <div className="flex items-center justify-between text-xs">
+    <span
+      className={
+        getDueDateStatus(task.dueDate).className
+      }
+    >
+      {getDueDateStatus(task.dueDate).text}
+    </span>
+
+    {task.dueDate && (
+      <span className="text-gray-500">
+        {new Date(task.dueDate).toLocaleDateString()}
+      </span>
+    )}
+  </div>
+</div>
             <span
               className={`rounded-full border px-3 py-1 text-xs capitalize ${getPriorityStyle(
                 task.priority
