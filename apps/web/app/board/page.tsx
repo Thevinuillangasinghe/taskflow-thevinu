@@ -1,6 +1,7 @@
 "use client";
-import { toast } from "sonner";
+
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 import {
   DndContext,
   DragEndEvent,
@@ -101,8 +102,14 @@ export default function BoardPage() {
   }
 
   function getPriorityStyle(priority?: string) {
-    if (priority === "high") return "border-red-500/30 bg-red-500/10 text-red-300";
-    if (priority === "low") return "border-green-500/30 bg-green-500/10 text-green-300";
+    if (priority === "high") {
+      return "border-red-500/30 bg-red-500/10 text-red-300";
+    }
+
+    if (priority === "low") {
+      return "border-green-500/30 bg-green-500/10 text-green-300";
+    }
+
     return "border-yellow-500/30 bg-yellow-500/10 text-yellow-300";
   }
 
@@ -128,6 +135,7 @@ export default function BoardPage() {
       setTasks(data.tasks || []);
     } catch (error) {
       console.error("Failed to fetch tasks:", error);
+      toast.error("Failed to fetch tasks");
     }
   }
 
@@ -148,6 +156,7 @@ export default function BoardPage() {
       setActivityLogs(data.activityLogs || []);
     } catch (error) {
       console.error("Failed to fetch activity logs:", error);
+      toast.error("Failed to fetch activity logs");
     }
   }
 
@@ -163,7 +172,10 @@ export default function BoardPage() {
   }, []);
 
   async function createTask() {
-    if (!newTaskTitle) return;
+    if (!newTaskTitle) {
+      toast.error("Task title is required");
+      return;
+    }
 
     try {
       const response = await fetch(`${getApiUrl()}/api/tasks`, {
@@ -185,14 +197,16 @@ export default function BoardPage() {
       const data = await response.json();
 
       if (!response.ok) {
-        alert(data.error || "Failed to create task");
+        toast.error(data.error || "Failed to create task");
         return;
       }
 
       setNewTaskTitle("");
       fetchTasks();
+      toast.success("Task created");
     } catch (error) {
       console.error("Failed to create task:", error);
+      toast.error("Failed to create task");
     }
   }
 
@@ -210,7 +224,7 @@ export default function BoardPage() {
       const data = await response.json();
 
       if (!response.ok) {
-        alert(data.error || "Failed to update task");
+        toast.error(data.error || "Failed to update task");
         return;
       }
 
@@ -219,8 +233,11 @@ export default function BoardPage() {
       if (selectedTask?.id === id) {
         setSelectedTask({ ...selectedTask, status });
       }
+
+      toast.success("Task updated");
     } catch (error) {
       console.error("Failed to update task:", error);
+      toast.error("Failed to update task");
     }
   }
 
@@ -249,15 +266,17 @@ export default function BoardPage() {
       const data = await response.json();
 
       if (!response.ok) {
-        alert(data.error || "Failed to update task");
+        toast.error(data.error || "Failed to update task");
         return;
       }
 
       setSelectedTask(data.task);
       fetchTasks();
       openTask(data.task);
+      toast.success("Task updated");
     } catch (error) {
       console.error("Failed to save task changes:", error);
+      toast.error("Failed to update task");
     }
   }
 
@@ -276,15 +295,17 @@ export default function BoardPage() {
       const data = await response.json();
 
       if (!response.ok) {
-        alert(data.error || "Failed to delete task");
+        toast.error(data.error || "Failed to delete task");
         return;
       }
 
       setSelectedTask(null);
       setActivityLogs([]);
       fetchTasks();
+      toast.success("Task deleted");
     } catch (error) {
       console.error("Failed to delete task:", error);
+      toast.error("Failed to delete task");
     }
   }
 
@@ -383,11 +404,7 @@ export default function BoardPage() {
 
         <DndContext onDragEnd={handleDragEnd}>
           <div className="grid gap-6 lg:grid-cols-3">
-            <DroppableColumn
-              id="todo"
-              title="Todo"
-              count={getTaskCount("todo")}
-            >
+            <DroppableColumn id="todo" title="Todo" count={getTaskCount("todo")}>
               {getTaskCount("todo") === 0
                 ? renderEmptyState()
                 : tasks
@@ -407,11 +424,7 @@ export default function BoardPage() {
                     .map((task) => renderTaskCard(task))}
             </DroppableColumn>
 
-            <DroppableColumn
-              id="done"
-              title="Done"
-              count={getTaskCount("done")}
-            >
+            <DroppableColumn id="done" title="Done" count={getTaskCount("done")}>
               {getTaskCount("done") === 0
                 ? renderEmptyState()
                 : tasks

@@ -1,7 +1,8 @@
 "use client";
-import { toast } from "sonner";
+
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -14,24 +15,18 @@ export default function LoginPage() {
 
     try {
       const apiUrl =
-        process.env.NEXT_PUBLIC_API_URL ||
-        "http://localhost:4000";
+        process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
 
-      console.log("API URL:", apiUrl);
-
-      const response = await fetch(
-        `${apiUrl}/api/auth/login`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            email,
-            password,
-          }),
-        }
-      );
+      const response = await fetch(`${apiUrl}/api/auth/login`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email,
+          password,
+        }),
+      });
 
       const text = await response.text();
 
@@ -41,22 +36,23 @@ export default function LoginPage() {
         data = JSON.parse(text);
       } catch {
         console.error("Non-JSON response:", text);
-        alert("Backend returned invalid response");
+        toast.error("Backend returned invalid response");
         return;
       }
 
       if (!response.ok) {
-        alert(data.error || "Login failed");
+        toast.error(data.error || "Login failed");
         return;
       }
 
       localStorage.setItem("token", data.token);
       localStorage.setItem("user", JSON.stringify(data.user));
 
+      toast.success("Login successful");
       router.push("/board");
     } catch (error) {
       console.error(error);
-      alert("Something went wrong");
+      toast.error("Something went wrong");
     }
   }
 
@@ -94,7 +90,7 @@ export default function LoginPage() {
           onChange={(event) => setPassword(event.target.value)}
         />
 
-        <button className="w-full rounded-md bg-black p-3 text-white">
+        <button className="w-full rounded-md bg-black p-3 text-white transition hover:bg-gray-800">
           Login
         </button>
       </form>
