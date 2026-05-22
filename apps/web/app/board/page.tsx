@@ -89,6 +89,7 @@ export default function BoardPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [priorityFilter, setPriorityFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
+  const [theme, setTheme] = useState("dark");
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [editTitle, setEditTitle] = useState("");
   const [editDescription, setEditDescription] = useState("");
@@ -162,7 +163,13 @@ function getDueDateStatus(dueDate?: string) {
     localStorage.removeItem("user");
     window.location.href = "/login";
   }
-
+  
+  function toggleTheme() {
+  const nextTheme = theme === "dark" ? "light" : "dark";
+  setTheme(nextTheme);
+  localStorage.setItem("taskflow-theme", nextTheme);
+  toast.success(`${nextTheme === "dark" ? "Dark" : "Light"} mode enabled`);
+}
   async function fetchTasks() {
     try {
       const response = await fetch(`${getApiUrl()}/api/tasks`, {
@@ -204,7 +211,11 @@ function getDueDateStatus(dueDate?: string) {
       window.location.href = "/login";
       return;
     }
+const savedTheme = localStorage.getItem("taskflow-theme");
 
+if (savedTheme) {
+  setTheme(savedTheme);
+}
     fetchTasks();
   }, []);
 
@@ -429,7 +440,13 @@ function getDueDateStatus(dueDate?: string) {
   }
 
   return (
-    <main className="flex min-h-screen bg-gradient-to-br from-gray-950 via-black to-gray-900 text-white">
+    <main
+  className={`flex min-h-screen ${
+    theme === "dark"
+      ? "bg-gradient-to-br from-gray-950 via-black to-gray-900 text-white"
+      : "bg-gray-100 text-gray-950"
+  }`}
+>
       <>
   <aside
     className={`${
@@ -494,14 +511,11 @@ function getDueDateStatus(dueDate?: string) {
 
           <div className="flex gap-3">
   <button
-    onClick={() =>
-      toast.info("Light mode coming soon")
-    }
-    className="rounded-xl border border-white/10 bg-white/5 px-5 py-3 text-gray-300 transition hover:bg-white/10"
-  >
-    🌙 Theme
-  </button>
-
+  onClick={toggleTheme}
+  className="rounded-xl border border-white/10 bg-white/5 px-5 py-3 text-gray-300 transition hover:bg-white/10"
+>
+  {theme === "dark" ? "🌙 Dark" : "☀️ Light"}
+</button>
   <button
     onClick={logout}
     className="rounded-xl border border-red-500/30 bg-red-500/10 px-5 py-3 text-red-400 transition hover:bg-red-500/20"
