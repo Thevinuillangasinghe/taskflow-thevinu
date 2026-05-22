@@ -61,11 +61,11 @@ function DroppableColumn({
   return (
     <div
       ref={setNodeRef}
-      className={`rounded-xl bg-white p-4 shadow ${
+      className={`rounded-2xl border border-white/10 bg-white/5 p-4 shadow-xl backdrop-blur ${
         isOver ? "ring-2 ring-blue-400" : ""
       }`}
     >
-      <h2 className="mb-4 text-2xl font-semibold">{title}</h2>
+      <h2 className="mb-4 text-xl font-semibold text-white">{title}</h2>
       <div className="space-y-3">{children}</div>
     </div>
   );
@@ -89,6 +89,18 @@ export default function BoardPage() {
 
   function getApiUrl() {
     return process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
+  }
+
+  function getPriorityStyle(priority?: string) {
+    if (priority === "high") {
+      return "border-red-500/30 bg-red-500/10 text-red-300";
+    }
+
+    if (priority === "low") {
+      return "border-green-500/30 bg-green-500/10 text-green-300";
+    }
+
+    return "border-yellow-500/30 bg-yellow-500/10 text-yellow-300";
   }
 
   function logout() {
@@ -284,192 +296,250 @@ export default function BoardPage() {
     await updateTaskStatus(taskId, newStatus);
   }
 
+  function renderEmptyState() {
+    return (
+      <div className="rounded-xl border border-dashed border-white/10 p-6 text-center text-sm text-gray-500">
+        No tasks yet
+      </div>
+    );
+  }
+
   function renderTaskCard(task: Task) {
     return (
       <DraggableTask key={task.id} task={task}>
         <div
           onClick={() => openTask(task)}
-          className="cursor-grab rounded-lg bg-gray-100 p-3 active:cursor-grabbing"
+          className="cursor-grab rounded-xl border border-white/10 bg-white/10 p-4 shadow transition hover:-translate-y-1 hover:bg-white/15 active:cursor-grabbing"
         >
-          <p className="font-medium">{task.title}</p>
-          <p className="text-sm text-gray-600">
-            Priority: {task.priority || "medium"}
-          </p>
+          <p className="font-semibold text-white">{task.title}</p>
+
+          {task.description && (
+            <p className="mt-2 line-clamp-2 text-sm text-gray-400">
+              {task.description}
+            </p>
+          )}
+
+          <div className="mt-4 flex items-center justify-between gap-2">
+            <span
+              className={`rounded-full border px-3 py-1 text-xs capitalize ${getPriorityStyle(
+                task.priority
+              )}`}
+            >
+              {task.priority || "medium"}
+            </span>
+
+            <span className="text-xs text-gray-500">
+              {task.assignee || "Unassigned"}
+            </span>
+          </div>
         </div>
       </DraggableTask>
     );
   }
 
   return (
-    <main className="min-h-screen bg-gray-100 p-8">
-      <div className="mb-8 flex items-center justify-between">
-        <h1 className="text-4xl font-bold">Task Board</h1>
+    <main className="min-h-screen bg-gradient-to-br from-gray-950 via-black to-gray-900 p-6 text-white">
+      <div className="mx-auto max-w-7xl">
+        <div className="mb-8 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+          <div>
+            <h1 className="text-5xl font-bold tracking-tight">Task Board</h1>
+            <p className="mt-2 text-gray-400">
+              Manage your workflow efficiently with TaskFlow.
+            </p>
+          </div>
 
-        <button
-          onClick={logout}
-          className="rounded-lg bg-red-500 px-4 py-2 text-white"
-        >
-          Logout
-        </button>
-      </div>
-
-      <div className="mb-8 flex gap-4 rounded-xl bg-white p-4 shadow">
-        <input
-          type="text"
-          placeholder="Enter task title"
-          value={newTaskTitle}
-          onChange={(event) => setNewTaskTitle(event.target.value)}
-          className="flex-1 rounded-lg border px-4 py-2"
-        />
-
-        <button
-          onClick={createTask}
-          className="rounded-lg bg-black px-4 py-2 text-white"
-        >
-          Add Task
-        </button>
-      </div>
-
-      <DndContext onDragEnd={handleDragEnd}>
-        <div className="grid grid-cols-3 gap-6">
-          <DroppableColumn id="todo" title="Todo">
-            {tasks
-              .filter((task) => task.status === "todo")
-              .map((task) => renderTaskCard(task))}
-          </DroppableColumn>
-
-          <DroppableColumn id="in-progress" title="In Progress">
-            {tasks
-              .filter((task) => task.status === "in-progress")
-              .map((task) => renderTaskCard(task))}
-          </DroppableColumn>
-
-          <DroppableColumn id="done" title="Done">
-            {tasks
-              .filter((task) => task.status === "done")
-              .map((task) => renderTaskCard(task))}
-          </DroppableColumn>
+          <button
+            onClick={logout}
+            className="rounded-xl border border-red-500/30 bg-red-500/10 px-5 py-3 text-red-400 transition hover:bg-red-500/20"
+          >
+            Logout
+          </button>
         </div>
-      </DndContext>
 
-      {selectedTask && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-          <div className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-xl bg-white p-6 shadow-xl">
-            <div className="mb-4 flex items-center justify-between">
-              <h2 className="text-2xl font-bold">Edit Task</h2>
+        <div className="mb-8 rounded-2xl border border-white/10 bg-white/5 p-4 backdrop-blur">
+          <div className="flex flex-col gap-4 md:flex-row">
+            <input
+              type="text"
+              placeholder="Enter task title..."
+              value={newTaskTitle}
+              onChange={(event) => setNewTaskTitle(event.target.value)}
+              className="flex-1 rounded-xl border border-white/10 bg-black/30 px-4 py-3 text-white outline-none transition focus:border-blue-500"
+            />
 
-              <button onClick={() => setSelectedTask(null)} className="text-xl">
-                ✕
-              </button>
-            </div>
+            <button
+              onClick={createTask}
+              className="rounded-xl bg-white px-6 py-3 font-semibold text-black transition hover:scale-[1.02]"
+            >
+              Add Task
+            </button>
+          </div>
+        </div>
 
-            <div className="space-y-3">
-              <div>
-                <label className="mb-1 block text-sm font-semibold">Title</label>
-                <input
-                  value={editTitle}
-                  onChange={(event) => setEditTitle(event.target.value)}
-                  className="w-full rounded-lg border px-3 py-2"
-                />
-              </div>
+        <DndContext onDragEnd={handleDragEnd}>
+          <div className="grid gap-6 lg:grid-cols-3">
+            <DroppableColumn id="todo" title="Todo">
+              {tasks.filter((task) => task.status === "todo").length === 0
+                ? renderEmptyState()
+                : tasks
+                    .filter((task) => task.status === "todo")
+                    .map((task) => renderTaskCard(task))}
+            </DroppableColumn>
 
-              <div>
-                <label className="mb-1 block text-sm font-semibold">
-                  Description
-                </label>
-                <textarea
-                  value={editDescription}
-                  onChange={(event) => setEditDescription(event.target.value)}
-                  className="w-full rounded-lg border px-3 py-2"
-                />
-              </div>
+            <DroppableColumn id="in-progress" title="In Progress">
+              {tasks.filter((task) => task.status === "in-progress").length === 0
+                ? renderEmptyState()
+                : tasks
+                    .filter((task) => task.status === "in-progress")
+                    .map((task) => renderTaskCard(task))}
+            </DroppableColumn>
 
-              <div>
-                <label className="mb-1 block text-sm font-semibold">Status</label>
-                <p className="rounded-lg bg-gray-100 px-3 py-2">
-                  {selectedTask.status}
-                </p>
-              </div>
+            <DroppableColumn id="done" title="Done">
+              {tasks.filter((task) => task.status === "done").length === 0
+                ? renderEmptyState()
+                : tasks
+                    .filter((task) => task.status === "done")
+                    .map((task) => renderTaskCard(task))}
+            </DroppableColumn>
+          </div>
+        </DndContext>
 
-              <div>
-                <label className="mb-1 block text-sm font-semibold">
-                  Priority
-                </label>
-                <select
-                  value={editPriority}
-                  onChange={(event) => setEditPriority(event.target.value)}
-                  className="w-full rounded-lg border px-3 py-2"
+        {selectedTask && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm">
+            <div className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-3xl border border-white/10 bg-gray-950 p-6 shadow-2xl">
+              <div className="mb-6 flex items-center justify-between">
+                <h2 className="text-3xl font-bold">Edit Task</h2>
+
+                <button
+                  onClick={() => setSelectedTask(null)}
+                  className="rounded-lg bg-white/10 px-3 py-2 transition hover:bg-white/20"
                 >
-                  <option value="low">Low</option>
-                  <option value="medium">Medium</option>
-                  <option value="high">High</option>
-                </select>
+                  ✕
+                </button>
               </div>
 
-              <div>
-                <label className="mb-1 block text-sm font-semibold">
-                  Assignee
-                </label>
-                <input
-                  value={editAssignee}
-                  onChange={(event) => setEditAssignee(event.target.value)}
-                  className="w-full rounded-lg border px-3 py-2"
-                />
-              </div>
+              <div className="space-y-4">
+                <div>
+                  <label className="mb-2 block text-sm font-medium text-gray-300">
+                    Title
+                  </label>
 
-              <div>
-                <label className="mb-1 block text-sm font-semibold">
-                  Due Date
-                </label>
-                <input
-                  type="date"
-                  value={editDueDate}
-                  onChange={(event) => setEditDueDate(event.target.value)}
-                  className="w-full rounded-lg border px-3 py-2"
-                />
-              </div>
-            </div>
+                  <input
+                    value={editTitle}
+                    onChange={(event) => setEditTitle(event.target.value)}
+                    className="w-full rounded-xl border border-white/10 bg-black/30 px-4 py-3 outline-none focus:border-blue-500"
+                  />
+                </div>
 
-            <div className="mt-4 flex gap-2">
-              <button
-                onClick={saveTaskChanges}
-                className="rounded-lg bg-black px-4 py-2 text-white"
-              >
-                Save Changes
-              </button>
+                <div>
+                  <label className="mb-2 block text-sm font-medium text-gray-300">
+                    Description
+                  </label>
 
-              <button
-                onClick={() => deleteTask(selectedTask.id)}
-                className="rounded-lg bg-red-600 px-4 py-2 text-white"
-              >
-                Delete Task
-              </button>
-            </div>
+                  <textarea
+                    value={editDescription}
+                    onChange={(event) =>
+                      setEditDescription(event.target.value)
+                    }
+                    className="min-h-[120px] w-full rounded-xl border border-white/10 bg-black/30 px-4 py-3 outline-none focus:border-blue-500"
+                  />
+                </div>
 
-            <div className="mt-6">
-              <h3 className="mb-2 text-lg font-semibold">Activity Log</h3>
+                <div className="grid gap-4 md:grid-cols-2">
+                  <div>
+                    <label className="mb-2 block text-sm font-medium text-gray-300">
+                      Priority
+                    </label>
 
-              <div className="space-y-2">
-                {activityLogs.length === 0 && (
-                  <p className="text-sm text-gray-500">No activity yet.</p>
-                )}
-
-                {activityLogs.map((log) => (
-                  <div
-                    key={log.id}
-                    className="rounded-lg bg-gray-100 p-2 text-sm"
-                  >
-                    <p>{log.action}</p>
-                    <p className="text-gray-500">
-                      {new Date(log.createdAt).toLocaleString()}
-                    </p>
+                    <select
+                      value={editPriority}
+                      onChange={(event) => setEditPriority(event.target.value)}
+                      className="w-full rounded-xl border border-white/10 bg-black/30 px-4 py-3 outline-none"
+                    >
+                      <option value="low">Low</option>
+                      <option value="medium">Medium</option>
+                      <option value="high">High</option>
+                    </select>
                   </div>
-                ))}
+
+                  <div>
+                    <label className="mb-2 block text-sm font-medium text-gray-300">
+                      Due Date
+                    </label>
+
+                    <input
+                      type="date"
+                      value={editDueDate}
+                      onChange={(event) => setEditDueDate(event.target.value)}
+                      className="w-full rounded-xl border border-white/10 bg-black/30 px-4 py-3 outline-none"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="mb-2 block text-sm font-medium text-gray-300">
+                    Assignee
+                  </label>
+
+                  <input
+                    value={editAssignee}
+                    onChange={(event) => setEditAssignee(event.target.value)}
+                    className="w-full rounded-xl border border-white/10 bg-black/30 px-4 py-3 outline-none"
+                  />
+                </div>
+
+                <div>
+                  <label className="mb-2 block text-sm font-medium text-gray-300">
+                    Status
+                  </label>
+
+                  <p className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-gray-300">
+                    {selectedTask.status}
+                  </p>
+                </div>
+              </div>
+
+              <div className="mt-6 flex flex-wrap gap-3">
+                <button
+                  onClick={saveTaskChanges}
+                  className="rounded-xl bg-white px-5 py-3 font-semibold text-black transition hover:scale-[1.02]"
+                >
+                  Save Changes
+                </button>
+
+                <button
+                  onClick={() => deleteTask(selectedTask.id)}
+                  className="rounded-xl border border-red-500/20 bg-red-500/10 px-5 py-3 text-red-400 transition hover:bg-red-500/20"
+                >
+                  Delete Task
+                </button>
+              </div>
+
+              <div className="mt-10">
+                <h3 className="mb-4 text-xl font-semibold">Activity Log</h3>
+
+                <div className="space-y-3">
+                  {activityLogs.length === 0 && (
+                    <p className="text-sm text-gray-500">No activity yet.</p>
+                  )}
+
+                  {activityLogs.map((log) => (
+                    <div
+                      key={log.id}
+                      className="rounded-xl border border-white/10 bg-white/5 p-4"
+                    >
+                      <p>{log.action}</p>
+
+                      <p className="mt-1 text-sm text-gray-500">
+                        {new Date(log.createdAt).toLocaleString()}
+                      </p>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </main>
   );
 }
