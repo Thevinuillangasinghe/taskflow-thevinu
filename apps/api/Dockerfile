@@ -8,9 +8,11 @@ RUN npm install
 
 COPY . .
 
+RUN chmod -R 755 node_modules/.bin
+
 RUN npx prisma generate
 
-RUN npx --yes tsc
+RUN ./node_modules/.bin/tsc
 
 EXPOSE 4000
 
