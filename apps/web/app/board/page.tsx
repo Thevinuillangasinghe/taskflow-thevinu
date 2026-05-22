@@ -89,7 +89,7 @@ export default function BoardPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [priorityFilter, setPriorityFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
-
+  const [sidebarOpen, setSidebarOpen] = useState(true);
   const [editTitle, setEditTitle] = useState("");
   const [editDescription, setEditDescription] = useState("");
   const [editPriority, setEditPriority] = useState("medium");
@@ -429,8 +429,51 @@ function getDueDateStatus(dueDate?: string) {
   }
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-gray-950 via-black to-gray-900 p-6 text-white">
-      <div className="mx-auto max-w-7xl">
+    <main className="flex min-h-screen bg-gradient-to-br from-gray-950 via-black to-gray-900 text-white">
+      <>
+  <aside
+    className={`${
+      sidebarOpen ? "w-64" : "w-20"
+    } hidden min-h-screen border-r border-white/10 bg-black/30 p-4 transition-all duration-300 md:block`}
+  >
+    <div className="mb-8 flex items-center justify-between">
+      {sidebarOpen && (
+        <h1 className="text-2xl font-bold">
+          TaskFlow
+        </h1>
+      )}
+
+      <button
+        onClick={() =>
+          setSidebarOpen(!sidebarOpen)
+        }
+        className="rounded-lg bg-white/10 p-2 transition hover:bg-white/20"
+      >
+        ☰
+      </button>
+    </div>
+
+    <nav className="space-y-2">
+      <button className="w-full rounded-xl bg-white/10 px-4 py-3 text-left transition hover:bg-white/20">
+        📋 {sidebarOpen && "Board"}
+      </button>
+
+      <button className="w-full rounded-xl px-4 py-3 text-left text-gray-400 transition hover:bg-white/10 hover:text-white">
+        📊 {sidebarOpen && "Analytics"}
+      </button>
+
+      <button className="w-full rounded-xl px-4 py-3 text-left text-gray-400 transition hover:bg-white/10 hover:text-white">
+        📅 {sidebarOpen && "Calendar"}
+      </button>
+
+      <button className="w-full rounded-xl px-4 py-3 text-left text-gray-400 transition hover:bg-white/10 hover:text-white">
+        ⚙️ {sidebarOpen && "Settings"}
+      </button>
+    </nav>
+  </aside>
+
+  <div className="flex-1 p-6">
+    <div className="mx-auto max-w-7xl">
         <div className="mb-8 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           
           <div>
@@ -723,6 +766,8 @@ function getDueDateStatus(dueDate?: string) {
           </div>
         )}
       </div>
-    </main>
+    </div>
+  </>
+</main>
   );
 }
