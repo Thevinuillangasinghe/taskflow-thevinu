@@ -39,8 +39,14 @@ function DraggableTask({
   });
 
   const style = transform
-    ? { transform: `translate3d(${transform.x}px, ${transform.y}px, 0)` }
-    : undefined;
+  ? {
+      transform: `translate3d(${transform.x}px, ${transform.y}px, 0)`,
+      transition: "transform 150ms ease",
+      zIndex: 50,
+    }
+  : {
+      transition: "transform 150ms ease",
+    };
 
   return (
     <div ref={setNodeRef} style={style} {...listeners} {...attributes}>
@@ -387,7 +393,7 @@ export default function BoardPage() {
       <DraggableTask key={task.id} task={task}>
         <div
           onClick={() => openTask(task)}
-          className="cursor-grab rounded-xl border border-white/10 bg-white/10 p-4 shadow transition hover:-translate-y-1 hover:bg-white/15 active:cursor-grabbing"
+          className="cursor-grab rounded-xl border border-white/10 bg-white/10 p-4 shadow transition-all duration-200 ease-out hover:-translate-y-1 hover:bg-white/15 active:cursor-grabbing active:scale-105"
         >
           <p className="font-semibold text-white">{task.title}</p>
 
