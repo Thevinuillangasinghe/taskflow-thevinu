@@ -433,13 +433,7 @@ export default function BoardPage() {
   }
 
   return (
-    <main
-      className={`flex min-h-screen ${
-        theme === "dark"
-          ? "bg-gradient-to-br from-gray-950 via-black to-gray-900 text-white"
-          : "bg-gray-100 text-gray-950"
-      }`}
-    >
+    <main className="flex min-h-screen bg-gradient-to-br from-gray-950 via-black to-gray-900 text-white">
       <>
         <aside
           className={`${
@@ -516,11 +510,11 @@ export default function BoardPage() {
 
               <div className="flex gap-3">
                 <button
-                  onClick={toggleTheme}
-                  className="rounded-xl border border-white/10 bg-white/5 px-5 py-3 text-gray-300 transition hover:bg-white/10"
-                >
-                  {theme === "dark" ? "🌙 Dark" : "☀️ Light"}
-                </button>
+  onClick={() => toast.info("Dark theme is enabled for this project")}
+  className="rounded-xl border border-white/10 bg-white/5 px-5 py-3 text-gray-300 transition hover:bg-white/10"
+>
+  🌙 Dark
+</button>
 
                 <button
                   onClick={logout}
