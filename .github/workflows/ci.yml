@@ -13,6 +13,26 @@ jobs:
   build-and-test:
     runs-on: ubuntu-latest
 
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: taskflow_test
+        ports:
+          - 5432:5432
+
+        options: >-
+          --health-cmd="pg_isready -U postgres"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/taskflow_test
+      JWT_SECRET: testsecret
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -31,6 +51,16 @@ jobs:
         run: |
           cd apps/api
           npm install
+
+      - name: Generate Prisma Client
+        run: |
+          cd apps/api
+          npx prisma generate
+
+      - name: Push Prisma schema
+        run: |
+          cd apps/api
+          npx prisma db push
 
       - name: Lint web
         run: |
