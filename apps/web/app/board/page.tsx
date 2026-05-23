@@ -41,9 +41,12 @@ function DraggableTask({
   const style = transform
   ? {
       transform: `translate3d(${transform.x}px, ${transform.y}px, 0)`,
+      transition: "transform 80ms linear",
       zIndex: 50,
     }
-  : undefined;
+  : {
+      transition: "transform 80ms linear",
+    };
 
   return (
     <div ref={setNodeRef} style={style} {...listeners} {...attributes}>
@@ -89,7 +92,7 @@ export default function BoardPage() {
   const [newTaskTitle, setNewTaskTitle] = useState("");
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [activityLogs, setActivityLogs] = useState<ActivityLog[]>([]);
-
+  const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [priorityFilter, setPriorityFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
@@ -171,22 +174,25 @@ export default function BoardPage() {
   }
 
   
+async function fetchTasks() {
+  try {
+    setIsLoading(true);
 
-  async function fetchTasks() {
-    try {
-      const response = await fetch(`${getApiUrl()}/api/tasks`, {
-        headers: {
-          Authorization: `Bearer ${getToken()}`,
-        },
-      });
+    const response = await fetch(`${getApiUrl()}/api/tasks`, {
+      headers: {
+        Authorization: `Bearer ${getToken()}`,
+      },
+    });
 
-      const data = await response.json();
-      setTasks(data.tasks || []);
-    } catch (error) {
-      console.error("Failed to fetch tasks:", error);
-      toast.error("Failed to fetch tasks");
-    }
+    const data = await response.json();
+    setTasks(data.tasks || []);
+  } catch (error) {
+    console.error("Failed to fetch tasks:", error);
+    toast.error("Failed to fetch tasks");
+  } finally {
+    setIsLoading(false);
   }
+}
 
   async function openTask(task: Task) {
     setSelectedTask(task);
@@ -383,7 +389,7 @@ export default function BoardPage() {
       <DraggableTask key={task.id} task={task}>
         <div
           onClick={() => openTask(task)}
-          className="cursor-grab rounded-xl border border-white/10 bg-white/10 p-4 shadow transition-colors hover:bg-white/15 active:cursor-grabbing"
+          className="cursor-grab rounded-xl border border-white/10 bg-white/10 p-4 shadow transition-all duration-150 ease-out hover:-translate-y-1 hover:bg-white/15 active:scale-[1.02] active:cursor-grabbing"
         >
           <p className="font-semibold">{task.title}</p>
 
@@ -429,7 +435,10 @@ export default function BoardPage() {
     <main className="flex min-h-screen bg-gradient-to-br from-gray-950 via-black to-gray-900 text-white">
       <>
         <aside
-          className={`border-white/10 bg-black/30`}
+  className={`${
+    sidebarOpen ? "w-64" : "w-20"
+  } hidden min-h-screen border-r border-white/10 bg-black/30 p-4 transition-all duration-300 md:block`}
+
         >
           <div className="mb-8 flex items-center justify-between">
             {sidebarOpen && <h1 className="text-2xl font-bold">TaskFlow</h1>}
@@ -578,7 +587,11 @@ export default function BoardPage() {
                 </button>
               </div>
             </div>
-
+{isLoading && (
+  <div className="mb-6 rounded-2xl border border-white/10 bg-white/5 p-6 text-center text-gray-400">
+    Loading tasks...
+  </div>
+)}
             <DndContext onDragEnd={handleDragEnd}>
               <div className="grid gap-6 lg:grid-cols-3">
                 <DroppableColumn
