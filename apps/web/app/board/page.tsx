@@ -41,12 +41,9 @@ function DraggableTask({
   const style = transform
   ? {
       transform: `translate3d(${transform.x}px, ${transform.y}px, 0)`,
-      transition: "transform 150ms ease",
       zIndex: 50,
     }
-  : {
-      transition: "transform 150ms ease",
-    };
+  : undefined;
 
   return (
     <div ref={setNodeRef} style={style} {...listeners} {...attributes}>
@@ -76,7 +73,7 @@ function DroppableColumn({
       }`}
     >
       <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-xl font-semibold text-white">{title}</h2>
+        <h2 className="text-xl font-semibold">{title}</h2>
         <span className="rounded-full bg-white/10 px-3 py-1 text-sm text-gray-300">
           {count}
         </span>
@@ -393,9 +390,9 @@ export default function BoardPage() {
       <DraggableTask key={task.id} task={task}>
         <div
           onClick={() => openTask(task)}
-          className="cursor-grab rounded-xl border border-white/10 bg-white/10 p-4 shadow transition-all duration-200 ease-out hover:-translate-y-1 hover:bg-white/15 active:cursor-grabbing active:scale-105"
+          className="cursor-grab rounded-xl border border-white/10 bg-white/10 p-4 shadow transition-colors hover:bg-white/15 active:cursor-grabbing"
         >
-          <p className="font-semibold text-white">{task.title}</p>
+          <p className="font-semibold">{task.title}</p>
 
           {task.description && (
             <p className="mt-2 line-clamp-2 text-sm text-gray-400">
@@ -447,7 +444,11 @@ export default function BoardPage() {
         <aside
           className={`${
             sidebarOpen ? "w-64" : "w-20"
-          } hidden min-h-screen border-r border-white/10 bg-black/30 p-4 transition-all duration-300 md:block`}
+          } hidden min-h-screen border-r p-4 transition-all duration-300 md:block ${
+  theme === "dark"
+    ? "border-white/10 bg-black/30"
+    : "border-gray-200 bg-white/70"
+}`}
         >
           <div className="mb-8 flex items-center justify-between">
             {sidebarOpen && <h1 className="text-2xl font-bold">TaskFlow</h1>}
@@ -470,21 +471,33 @@ export default function BoardPage() {
 
             <Link
               href="/analytics"
-              className="block w-full rounded-xl px-4 py-3 text-left text-gray-400 transition hover:bg-white/10 hover:text-white"
+              className={`block w-full rounded-xl px-4 py-3 text-left transition ${
+  theme === "dark"
+    ? "text-gray-400 hover:bg-white/10 hover:text-white"
+    : "text-gray-700 hover:bg-black/10 hover:text-black"
+}`}
             >
               📊 {sidebarOpen && "Analytics"}
             </Link>
 
             <Link
               href="/calendar"
-              className="block w-full rounded-xl px-4 py-3 text-left text-gray-400 transition hover:bg-white/10 hover:text-white"
+              className={`block w-full rounded-xl px-4 py-3 text-left transition ${
+  theme === "dark"
+    ? "text-gray-400 hover:bg-white/10 hover:text-white"
+    : "text-gray-700 hover:bg-black/10 hover:text-black"
+}`}
             >
               📅 {sidebarOpen && "Calendar"}
             </Link>
 
             <Link
               href="/settings"
-              className="block w-full rounded-xl px-4 py-3 text-left text-gray-400 transition hover:bg-white/10 hover:text-white"
+              className={`block w-full rounded-xl px-4 py-3 text-left transition ${
+  theme === "dark"
+    ? "text-gray-400 hover:bg-white/10 hover:text-white"
+    : "text-gray-700 hover:bg-black/10 hover:text-black"
+}`}
             >
               ⚙️ {sidebarOpen && "Settings"}
             </Link>
@@ -520,26 +533,26 @@ export default function BoardPage() {
 
             <div className="mb-8 grid gap-4 md:grid-cols-4">
               <div className="rounded-2xl border border-white/10 bg-white/5 p-5 backdrop-blur">
-                <p className="text-sm text-gray-400">Total Tasks</p>
+                <p className={theme === "dark" ? "text-sm text-gray-400" : "text-sm text-gray-600"}>Total Tasks</p>
                 <h2 className="mt-2 text-3xl font-bold">{tasks.length}</h2>
               </div>
 
               <div className="rounded-2xl border border-white/10 bg-white/5 p-5 backdrop-blur">
-                <p className="text-sm text-gray-400">Completed</p>
+                <p className={theme === "dark" ? "text-sm text-gray-400" : "text-sm text-gray-600"}>Completed</p>
                 <h2 className="mt-2 text-3xl font-bold text-green-400">
                   {tasks.filter((task) => task.status === "done").length}
                 </h2>
               </div>
 
               <div className="rounded-2xl border border-white/10 bg-white/5 p-5 backdrop-blur">
-                <p className="text-sm text-gray-400">In Progress</p>
+                <p className={theme === "dark" ? "text-sm text-gray-400" : "text-sm text-gray-600"}>In Progress</p>
                 <h2 className="mt-2 text-3xl font-bold text-yellow-300">
                   {tasks.filter((task) => task.status === "in-progress").length}
                 </h2>
               </div>
 
               <div className="rounded-2xl border border-white/10 bg-white/5 p-5 backdrop-blur">
-                <p className="text-sm text-gray-400">High Priority</p>
+                <p className={theme === "dark" ? "text-sm text-gray-400" : "text-sm text-gray-600"}>High Priority</p>
                 <h2 className="mt-2 text-3xl font-bold text-red-400">
                   {tasks.filter((task) => task.priority === "high").length}
                 </h2>
