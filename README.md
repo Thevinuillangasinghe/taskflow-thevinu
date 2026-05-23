@@ -2,185 +2,252 @@
 
 A full-stack Kanban task management application built with Next.js, Fastify, Prisma, and PostgreSQL.
 
+TaskFlow was developed as part of a Software Development Life Cycle assignment covering requirements, planning, system design, implementation, testing, deployment, and maintenance.
+
+---
+
 ## Live Demo
 
-Frontend:
+Frontend:  
 https://taskflow-thevinu.vercel.app
 
-Backend API:
+Backend API:  
 https://taskflow-thevinu-production.up.railway.app
 
 ---
 
-# Features
+## Features
 
 - User signup and login
 - JWT authentication
 - Protected routes
+- Workspace support
 - Kanban task board
 - Drag and drop tasks
 - Create tasks
 - Edit tasks
 - Delete tasks
 - Activity logs
+- Search and filtering
+- Due-date highlighting
+- Analytics dashboard
+- Calendar page
+- Settings page
+- Theme toggle
 - PostgreSQL database
 - Prisma ORM
 - Responsive UI
+- Docker support
+- CI/CD pipeline
 - Production deployment
 
 ---
 
-# Tech Stack
+## Tech Stack
 
-## Frontend
+### Frontend
 
 - Next.js
 - React
 - TypeScript
 - Tailwind CSS
 - dnd-kit
+- Recharts
+- Playwright
 
-## Backend
+### Backend
 
 - Fastify
 - Prisma ORM
 - PostgreSQL
 - JWT Authentication
 - Zod Validation
+- Vitest
+- Supertest
 
-## Deployment
+### DevOps & Deployment
 
+- Docker
+- Docker Compose
+- GitHub Actions
 - Vercel
 - Railway
 
 ---
 
-# Project Structure
+## Project Structure
 
 ```bash
 taskflow-thevinu/
 │
 ├── apps/
-│   ├── web/      # Next.js frontend
-│   └── api/      # Fastify backend
+│   ├── web/              # Next.js frontend
+│   └── api/              # Fastify backend
 │
-├── prisma/
-├── README.md
-└── docker-compose.yml
-```
+├── .github/workflows/   # GitHub Actions CI
+├── docs/                # SDLC documentation
+├── docker-compose.yml
+└── README.md
 
----
-
-# Local Development Setup
-
-## 1. Clone Repository
-
-```bash
+Local Development Setup
+1. Clone Repository
 git clone https://github.com/ThevinuIllangasinghe/taskflow-thevinu.git
-```
-
-## 2. Install Dependencies
+2. Install Dependencies
 
 Frontend:
 
-```bash
 cd apps/web
 npm install
-```
 
 Backend:
 
-```bash
 cd apps/api
 npm install
-```
-
----
-
-# Environment Variables
-
-## Frontend `.env.local`
-
-```env
+Environment Variables
+Frontend .env.local
 NEXT_PUBLIC_API_URL=http://localhost:4000
-```
-
-## Backend `.env`
-
-```env
+Backend .env
 DATABASE_URL=your_postgresql_url
 JWT_SECRET=your_secret_key
-```
-
----
-
-# Run Application
-
-## Backend
-
-```bash
+PORT=4000
+Run Application Locally
+Backend
 cd apps/api
 npm run dev
-```
 
-## Frontend
+Backend runs on:
 
-```bash
+http://localhost:4000
+Frontend
 cd apps/web
 npm run dev
-```
 
----
+Frontend runs on:
 
-# Production Deployment
+http://localhost:3000
+Run with Docker
 
-## Frontend
+From the project root:
 
-Deployed using Vercel.
+docker compose up --build
 
-## Backend
+Services:
 
-Deployed using Railway with PostgreSQL.
+Frontend: http://localhost:3000
+Backend: http://localhost:4000
+PostgreSQL: localhost:5432
+Production Deployment
+Frontend
 
----
+Deployed using Vercel and connected to the GitHub repository for automatic deployments.
 
-# API Routes
+Backend
 
-## Authentication
+Deployed using Railway with PostgreSQL database hosting.
 
-- POST `/api/auth/signup`
-- POST `/api/auth/login`
+Environment Management
 
-## Tasks
+Production environment variables are managed through Vercel and Railway secret stores.
 
-- GET `/api/tasks`
-- POST `/api/tasks`
-- PATCH `/api/tasks/:id`
-- DELETE `/api/tasks/:id`
+CI/CD
 
-## Workspaces
+GitHub Actions automatically runs checks on push and pull requests to main.
 
-- GET `/api/workspaces`
-- POST `/api/workspaces`
+The workflow includes:
 
----
-
-# Testing
-
-Run backend tests:
-
-```bash
+Dependency installation
+Linting
+Backend tests
+Build validation
+API Routes
+Authentication
+POST /api/auth/signup
+POST /api/auth/login
+Tasks
+GET /api/tasks
+POST /api/tasks
+PATCH /api/tasks/:id
+DELETE /api/tasks/:id
+GET /api/tasks/:id/activity
+Workspaces
+GET /api/workspaces
+POST /api/workspaces
+Health Check
+GET /health
+Testing
+Backend Tests
+cd apps/api
 npm run test
-```
 
----
+Backend testing includes:
 
-# Screenshots
+Auth integration tests
+Signup validation tests
+Login validation tests
+Protected route tests
+Task CRUD tests
+Activity log tests
+Frontend E2E Tests
+cd apps/web
+npx playwright test
 
-Add screenshots here after final UI polish.
+Frontend E2E testing includes:
 
----
+Signup page flow
+Login page flow
+Page load validation
+Architecture Summary
 
-# Author
+TaskFlow follows a modern full-stack monorepo architecture.
+
+Frontend: Next.js App Router with Tailwind CSS
+Backend: Fastify REST API
+Database: PostgreSQL with Prisma ORM
+Authentication: JWT-based authentication
+Validation: Zod request validation
+Testing: Vitest, Supertest, and Playwright
+Deployment:
+Frontend deployed to Vercel
+Backend and database deployed to Railway
+CI/CD: GitHub Actions
+Containerization: Docker Compose
+
+The application follows a Kanban-style workflow similar to Trello, Linear, and Jira.
+
+Assignment Deliverables Completed
+Requirements and planning
+System design
+Full-stack implementation
+Authentication
+Workspace and task management
+Kanban board
+Activity logging
+Backend integration testing
+Frontend E2E testing
+Docker containerization
+CI/CD workflow
+Production deployment
+Documentation and handover preparation
+Screenshots
+
+Add screenshots here:
+
+Landing page
+Login page
+Signup page
+Kanban board
+Analytics dashboard
+Calendar page
+Settings page
+Future Improvements
+Real-time collaboration with WebSockets
+File attachments
+Email notifications
+Team workspace invitations
+Backend-powered calendar scheduling
+Advanced analytics
+Full database-backed user settings
+Notification center
+Author
 
 Thevinu Illangasinghe

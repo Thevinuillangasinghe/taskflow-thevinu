@@ -1,39 +1,66 @@
+version: "3.9"
+
 services:
   db:
-    image: postgres:16
+    image: postgres:16-alpine
     container_name: taskflow-db
+    restart: unless-stopped
+
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: taskflow
+
     ports:
       - "5432:5432"
+
     volumes:
       - taskflow-db-data:/var/lib/postgresql/data
 
   api:
     build:
       context: ./apps/api
+
     container_name: taskflow-api
+
+    restart: unless-stopped
+
     ports:
       - "4000:4000"
+
     environment:
       DATABASE_URL: postgresql://postgres:postgres@db:5432/taskflow
       JWT_SECRET: supersecretkey
+      PORT: 4000
+
     depends_on:
       - db
-    command: sh -c "sleep 10 && npx prisma migrate deploy && npm run dev"
+
+    command: >
+      sh -c "
+      sleep 10 &&
+      npx prisma migrate deploy &&
+      npm run dev
+      "
 
   web:
     build:
       context: ./apps/web
+
     container_name: taskflow-web
+
+    restart: unless-stopped
+
     ports:
       - "3000:3000"
+
     environment:
       NEXT_PUBLIC_API_URL: http://localhost:4000
+
     depends_on:
       - api
+
+    command: npm run dev
 
 volumes:
   taskflow-db-data:
