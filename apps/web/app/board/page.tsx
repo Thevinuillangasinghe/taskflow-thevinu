@@ -207,17 +207,19 @@ export default function BoardPage() {
   }
 
   useEffect(() => {
-    const token = getToken();
+  const token = getToken();
 
-    if (!token) {
-      window.location.href = "/login";
-      return;
-    }
+  if (!token) {
+    window.location.href = "/login";
+    return;
+  }
 
-    
+  async function loadTasks() {
+    await fetchTasks();
+  }
 
-    fetchTasks();
-  }, []);
+  loadTasks();
+}, []);
 
   async function createTask() {
     if (!newTaskTitle) {
