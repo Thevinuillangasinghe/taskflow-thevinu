@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
@@ -9,9 +10,12 @@ export default function LoginPage() {
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
   async function handleLogin(event: React.FormEvent) {
     event.preventDefault();
+
+    setIsLoading(true);
 
     try {
       const apiUrl =
@@ -33,11 +37,13 @@ export default function LoginPage() {
         data = JSON.parse(text);
       } catch {
         toast.error("Backend returned invalid response");
+        setIsLoading(false);
         return;
       }
 
       if (!response.ok) {
         toast.error(data.error || "Login failed");
+        setIsLoading(false);
         return;
       }
 
@@ -46,10 +52,12 @@ export default function LoginPage() {
       localStorage.setItem("workspaceId", String(data.workspace.id));
 
       toast.success("Login successful");
+
       router.push("/board");
     } catch (error) {
       console.error(error);
       toast.error("Something went wrong");
+      setIsLoading(false);
     }
   }
 
@@ -87,9 +95,22 @@ export default function LoginPage() {
           onChange={(event) => setPassword(event.target.value)}
         />
 
-        <button className="w-full rounded-xl bg-white p-3 font-semibold text-black transition hover:bg-gray-200">
-          Login
+        <button
+          disabled={isLoading}
+          className="w-full rounded-xl bg-white p-3 font-semibold text-black transition hover:bg-gray-200 disabled:cursor-not-allowed disabled:opacity-60"
+        >
+          {isLoading ? "Logging in..." : "Login"}
         </button>
+
+        <p className="mt-5 text-center text-sm text-gray-400">
+          Don&apos;t have an account?{" "}
+          <Link
+            href="/signup"
+            className="font-medium text-white hover:underline"
+          >
+            Sign up
+          </Link>
+        </p>
       </form>
     </main>
   );

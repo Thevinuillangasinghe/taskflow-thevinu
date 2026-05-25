@@ -1,5 +1,5 @@
 "use client";
-
+import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
@@ -103,6 +103,12 @@ export default function SignupPage() {
         <button className="w-full rounded-xl bg-white p-3 font-semibold text-black transition hover:bg-gray-200">
           Sign Up
         </button>
+        <p className="mt-5 text-center text-sm text-gray-400">
+  Already have an account?{" "}
+  <Link href="/login" className="font-medium text-white hover:underline">
+    Log in
+  </Link>
+</p>
       </form>
     </main>
   );
