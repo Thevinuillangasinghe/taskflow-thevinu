@@ -20,6 +20,7 @@ afterAll(async () => {
 describe("Tasks API", () => {
   let token = "";
   let taskId = 0;
+  let workspaceId = 0;
 
   const testUser = {
     name: "Task Test User",
@@ -41,8 +42,10 @@ describe("Tasks API", () => {
 
     expect(loginResponse.status).toBe(200);
     expect(loginResponse.body.token).toBeDefined();
+    expect(loginResponse.body.workspace).toBeDefined();
 
     token = loginResponse.body.token;
+    workspaceId = loginResponse.body.workspace.id;
   });
 
   it("should reject task creation without auth", async () => {
@@ -54,7 +57,7 @@ describe("Tasks API", () => {
         status: "todo",
         priority: "medium",
         assignee: "Test User",
-        workspaceId: 1,
+        workspaceId,
       });
 
     expect(response.status).toBe(401);
@@ -63,8 +66,9 @@ describe("Tasks API", () => {
   it("should create a workspace", async () => {
     const response = await request(app.server)
       .post("/api/workspaces")
+      .set("Authorization", `Bearer ${token}`)
       .send({
-        name: `Test Workspace ${Date.now()}`,
+        name: "Test Workspace",
       });
 
     expect(response.status).toBe(201);
@@ -81,7 +85,7 @@ describe("Tasks API", () => {
         status: "todo",
         priority: "medium",
         assignee: "Task Test User",
-        workspaceId: 1,
+        workspaceId,
       });
 
     expect(response.status).toBe(201);
@@ -107,7 +111,8 @@ describe("Tasks API", () => {
 
   it("should get task activity logs", async () => {
     const response = await request(app.server)
-      .get(`/api/tasks/${taskId}/activity`);
+      .get(`/api/tasks/${taskId}/activity`)
+      .set("Authorization", `Bearer ${token}`);
 
     expect(response.status).toBe(200);
     expect(response.body.activityLogs).toBeDefined();
