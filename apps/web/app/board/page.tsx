@@ -245,8 +245,8 @@ async function fetchTasks() {
           description: "",
           status: "todo",
           priority: "medium",
-          assignee: "Thevinu",
           workspaceId: Number(localStorage.getItem("workspaceId")),
+          assignee: JSON.parse(localStorage.getItem("user") || "{}").name,
         }),
       });
 
