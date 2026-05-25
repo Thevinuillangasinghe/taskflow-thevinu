@@ -388,7 +388,7 @@ async function fetchTasks() {
     return (
       <DraggableTask key={task.id} task={task}>
         <div
-          onClick={() => openTask(task)}
+          onDoubleClick={() => openTask(task)}
           className="cursor-grab rounded-xl border border-white/10 bg-white/10 p-4 shadow transition-all duration-150 ease-out hover:-translate-y-1 hover:bg-white/15 active:scale-[1.02] active:cursor-grabbing"
         >
           <p className="font-semibold">{task.title}</p>
@@ -401,8 +401,12 @@ async function fetchTasks() {
 
           <div className="mt-4 space-y-3">
             <div className="flex items-center justify-between gap-2">
+            
               <button
   type="button"
+  onPointerDown={(event) => {
+    event.stopPropagation();
+  }}
   onClick={(event) => {
     event.stopPropagation();
     openTask(task);
