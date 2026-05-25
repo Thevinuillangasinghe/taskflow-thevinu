@@ -246,7 +246,7 @@ async function fetchTasks() {
           status: "todo",
           priority: "medium",
           assignee: "Thevinu",
-          workspaceId: 1,
+          workspaceId: Number(localStorage.getItem("workspaceId")),
         }),
       });
 

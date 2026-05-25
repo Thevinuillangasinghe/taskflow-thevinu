@@ -43,6 +43,7 @@ export default function LoginPage() {
 
       localStorage.setItem("token", data.token);
       localStorage.setItem("user", JSON.stringify(data.user));
+      localStorage.setItem("workspaceId", String(data.workspace.id));
 
       toast.success("Login successful");
       router.push("/board");

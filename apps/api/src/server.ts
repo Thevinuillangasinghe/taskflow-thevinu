@@ -8,6 +8,11 @@ import prisma from "./prisma";
 
 const app = Fastify({ logger: true });
 
+type AuthUser = {
+  userId: number;
+  email: string;
+};
+
 const signupSchema = z.object({
   name: z.string().min(1, "Name is required"),
   email: z.string().email("Valid email is required"),
@@ -84,6 +89,12 @@ app.post("/api/auth/signup", async (request, reply) => {
     },
   });
 
+  const workspace = await prisma.workspace.create({
+    data: {
+      name: `${email}-workspace`,
+    },
+  });
+
   return reply.status(201).send({
     message: "Signup successful",
     user: {
@@ -91,6 +102,7 @@ app.post("/api/auth/signup", async (request, reply) => {
       name: user.name,
       email: user.email,
     },
+    workspace,
   });
 });
 
@@ -116,14 +128,25 @@ app.post("/api/auth/login", async (request, reply) => {
     });
   }
 
-  const passwordMatches = await bcrypt.compare(
-    password,
-    user.password
-  );
+  const passwordMatches = await bcrypt.compare(password, user.password);
 
   if (!passwordMatches) {
     return reply.status(401).send({
       error: "Invalid credentials",
+    });
+  }
+
+  let workspace = await prisma.workspace.findFirst({
+    where: {
+      name: `${user.email}-workspace`,
+    },
+  });
+
+  if (!workspace) {
+    workspace = await prisma.workspace.create({
+      data: {
+        name: `${user.email}-workspace`,
+      },
     });
   }
 
@@ -146,11 +169,13 @@ app.post("/api/auth/login", async (request, reply) => {
       name: user.name,
       email: user.email,
     },
+    workspace,
   });
 });
 
 app.post(
   "/api/workspaces",
+  { preHandler: authenticate },
   async (request, reply) => {
     const result = workspaceSchema.safeParse(request.body);
 
@@ -162,9 +187,12 @@ app.post(
     }
 
     const { name } = result.data;
+    const user = request.user as AuthUser;
 
     const workspace = await prisma.workspace.create({
-      data: { name },
+      data: {
+        name: `${user.email}-${name}`,
+      },
     });
 
     return reply.status(201).send({
@@ -174,23 +202,32 @@ app.post(
   }
 );
 
-app.get("/api/workspaces", async () => {
-  const workspaces = await prisma.workspace.findMany({
-    include: {
-      tasks: true,
-    },
-  });
+app.get(
+  "/api/workspaces",
+  { preHandler: authenticate },
+  async (request) => {
+    const user = request.user as AuthUser;
 
-  return { workspaces };
-});
+    const workspaces = await prisma.workspace.findMany({
+      where: {
+        name: {
+          startsWith: user.email,
+        },
+      },
+      include: {
+        tasks: true,
+      },
+    });
+
+    return { workspaces };
+  }
+);
 
 app.post(
   "/api/tasks",
   { preHandler: authenticate },
   async (request, reply) => {
-    const result = createTaskSchema.safeParse(
-      request.body
-    );
+    const result = createTaskSchema.safeParse(request.body);
 
     if (!result.success) {
       return reply.status(400).send({
@@ -209,14 +246,20 @@ app.post(
       workspaceId,
     } = result.data;
 
-    const workspace =
-      await prisma.workspace.findUnique({
-        where: { id: workspaceId },
-      });
+    const user = request.user as AuthUser;
+
+    const workspace = await prisma.workspace.findFirst({
+      where: {
+        id: workspaceId,
+        name: {
+          startsWith: user.email,
+        },
+      },
+    });
 
     if (!workspace) {
-      return reply.status(404).send({
-        error: "Workspace not found",
+      return reply.status(403).send({
+        error: "You do not have access to this workspace",
       });
     }
 
@@ -227,10 +270,8 @@ app.post(
         status,
         priority: priority || "medium",
         assignee,
-        dueDate: dueDate
-          ? new Date(dueDate)
-          : null,
-        workspaceId,
+        dueDate: dueDate ? new Date(dueDate) : null,
+        workspaceId: workspace.id,
         activityLogs: {
           create: {
             action: `Task created with status ${status}`,
@@ -250,16 +291,37 @@ app.post(
   }
 );
 
-app.get("/api/tasks", async () => {
-  const tasks = await prisma.task.findMany({
-    include: {
-      workspace: true,
-      activityLogs: true,
-    },
-  });
+app.get(
+  "/api/tasks",
+  { preHandler: authenticate },
+  async (request) => {
+    const user = request.user as AuthUser;
 
-  return { tasks };
-});
+    const workspaces = await prisma.workspace.findMany({
+      where: {
+        name: {
+          startsWith: user.email,
+        },
+      },
+    });
+
+    const workspaceIds = workspaces.map((workspace) => workspace.id);
+
+    const tasks = await prisma.task.findMany({
+      where: {
+        workspaceId: {
+          in: workspaceIds,
+        },
+      },
+      include: {
+        workspace: true,
+        activityLogs: true,
+      },
+    });
+
+    return { tasks };
+  }
+);
 
 app.patch(
   "/api/tasks/:id",
@@ -270,10 +332,9 @@ app.patch(
     };
 
     const taskId = Number(params.id);
+    const user = request.user as AuthUser;
 
-    const result = updateTaskSchema.safeParse(
-      request.body
-    );
+    const result = updateTaskSchema.safeParse(request.body);
 
     if (!result.success) {
       return reply.status(400).send({
@@ -284,10 +345,16 @@ app.patch(
 
     const body = result.data;
 
-    const existingTask =
-      await prisma.task.findUnique({
-        where: { id: taskId },
-      });
+    const existingTask = await prisma.task.findFirst({
+      where: {
+        id: taskId,
+        workspace: {
+          name: {
+            startsWith: user.email,
+          },
+        },
+      },
+    });
 
     if (!existingTask) {
       return reply.status(404).send({
@@ -303,9 +370,7 @@ app.patch(
         status: body.status,
         priority: body.priority,
         assignee: body.assignee,
-        dueDate: body.dueDate
-          ? new Date(body.dueDate)
-          : undefined,
+        dueDate: body.dueDate ? new Date(body.dueDate) : undefined,
         activityLogs: {
           create: {
             action: "Task updated",
@@ -327,15 +392,24 @@ app.patch(
 
 app.get(
   "/api/tasks/:id/activity",
+  { preHandler: authenticate },
   async (request, reply) => {
     const params = request.params as {
       id: string;
     };
 
     const taskId = Number(params.id);
+    const user = request.user as AuthUser;
 
-    const task = await prisma.task.findUnique({
-      where: { id: taskId },
+    const task = await prisma.task.findFirst({
+      where: {
+        id: taskId,
+        workspace: {
+          name: {
+            startsWith: user.email,
+          },
+        },
+      },
     });
 
     if (!task) {
@@ -344,13 +418,12 @@ app.get(
       });
     }
 
-    const activityLogs =
-      await prisma.activityLog.findMany({
-        where: { taskId },
-        orderBy: {
-          createdAt: "desc",
-        },
-      });
+    const activityLogs = await prisma.activityLog.findMany({
+      where: { taskId },
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
 
     return { activityLogs };
   }
@@ -365,11 +438,18 @@ app.delete(
     };
 
     const taskId = Number(params.id);
+    const user = request.user as AuthUser;
 
-    const existingTask =
-      await prisma.task.findUnique({
-        where: { id: taskId },
-      });
+    const existingTask = await prisma.task.findFirst({
+      where: {
+        id: taskId,
+        workspace: {
+          name: {
+            startsWith: user.email,
+          },
+        },
+      },
+    });
 
     if (!existingTask) {
       return reply.status(404).send({
