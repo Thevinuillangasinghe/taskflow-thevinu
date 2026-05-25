@@ -401,13 +401,18 @@ async function fetchTasks() {
 
           <div className="mt-4 space-y-3">
             <div className="flex items-center justify-between gap-2">
-              <span
-                className={`rounded-full border px-3 py-1 text-xs capitalize ${getPriorityStyle(
-                  task.priority
-                )}`}
-              >
-                {task.priority || "medium"}
-              </span>
+              <button
+  type="button"
+  onClick={(event) => {
+    event.stopPropagation();
+    openTask(task);
+  }}
+  className={`rounded-full border px-3 py-1 text-xs capitalize ${getPriorityStyle(
+    task.priority
+  )}`}
+>
+  {task.priority || "medium"}
+</button>
 
               <span className="text-xs text-gray-500">
                 {task.assignee || "Unassigned"}
